@@ -1,0 +1,19 @@
+stages:
+  - deployment
+deployment:
+  stage: deployment
+  script:
+    - sudo chown -R gitlab-runner:gitlab-runner /var/www/onafound/onafoundation.uz/web/frontend
+    - rsync -rult --delete-after --exclude=.git/ --exclude=.gitlab-ci.yml --exclude=.env --exclude=node_modules/ $CI_PROJECT_DIR/ /var/www/onafound/onafoundation.uz/web/frontend
+    - cd /var/www/onafound/onafoundation.uz/web/frontend && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && export NVM_DIR="$HOME/.nvm" && [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  && nvm install 18 && nvm use 18
+    #- npm install --location=global yarn
+    #- npm install -g pm2
+    - cp .env.example .env
+    - yarn install
+    - yarn build
+    - npm install -g pm2 
+    - pm2 start
+  tags:
+    - master
+  only:
+    - master
